@@ -91,6 +91,7 @@
     <ClInclude Include="Gwin.h" />
     <ClInclude Include="GwinItem.h" />
     <ClInclude Include="GwinMonitor.h" />
+    <ClInclude Include="GwinShader.h" />
     <ClInclude Include="Gwin_Local.h" />
     <ClInclude Include="Gwin_Type.h" />
     <ClInclude Include="GwinWindow.h" />
@@ -100,6 +101,7 @@
     <ClCompile Include="Gwin.c" />
     <ClCompile Include="GwinItem.c" />
     <ClCompile Include="GwinMonitor.c" />
+    <ClCompile Include="GwinShader.c" />
     <ClCompile Include="GwinWindow.c" />
     <ClCompile Include="precompiled.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

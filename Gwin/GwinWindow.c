@@ -184,18 +184,18 @@ GWIN_API void gwinWindowDlocContent(GwinWindow * const win)
 
    // Clean up the item array.
    // For all items...
-   forCountDown(index, gwinItemArrayGetCount(&win->itemArray))
+   forCountDown(index, gwinItemArrayGetCount(win->itemArray))
    {
       // Get the item
-      item = gwinItemArrayGetAt(&win->itemArray, index);
+      item = gwinItemArrayGetAt(win->itemArray, index);
 
       // Dloc itself.
       item->notifyDlocItem(item);
    }
-   gwinItemArrayDlocContent(&win->itemArray);
+   gwinItemArrayDloc(win->itemArray);
 
    // Clean up the item hole index array.
-   gv4ArrayDlocContent(&win->itemHoleIndexArray);
+   gv4ArrayDloc(win->itemHoleIndexArray);
 
    gmemClearType(win, GwinWindow);
 
@@ -443,7 +443,7 @@ GWIN_API Gb gwinWindowRemoveItemAt(GwinWindow * const win, Gindex const index)
 
    // Record in the hole index array that this is a hole that can be reused.
    vindex.i = index;
-   gv4ArrayAddEnd(&win->itemHoleIndexArray, &vindex);
+   gv4ArrayAddEnd(win->itemHoleIndexArray, &vindex);
 
    greturn gbTRUE;
 }
@@ -465,7 +465,8 @@ GWIN_API Gb gwinWindowSetCurrent(GwinWindow * const win)
 
    // According to a post in Stack Overflow, This may need to be called after every context switch.
    // Some GLEWs may not need it but to be safe, call if after every SDL_GL_MakeCurrent();
-   error = glewInit();
+   glewExperimental = GL_TRUE;
+   error            = glewInit();
    greturnFalseIf(error != GLEW_OK);
 
    greturn gbTRUE;
@@ -524,11 +525,25 @@ GWIN_API Gb gwinWindowSetIsVisible(GwinWindow * const win, Gb const value)
          greturnFalseIf(!SDL_MaximizeWindow((SDL_Window *) win->windowSdl));
       }
 
+      // Set preferred OpenGL requirements.
+      SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION,  3);
+      SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION,  3);
+      SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK,   SDL_GL_CONTEXT_PROFILE_CORE);
+      SDL_GL_SetAttribute(SDL_GL_RED_SIZE,               8);
+      SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE,             8);
+      SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE,              8);
+      SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER,           1);
+      SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE,             32);
+      SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE,           1);
+
       win->contextSdl = (GwinWindowContextSdl *) SDL_GL_CreateContext((SDL_Window *) win->windowSdl);
 
       greturnFalseIf(SDL_GL_SetSwapInterval(1) < 0);
 
       gwinWindowSetCurrent(win);
+
+      // Create the shaders.
+      gwinShaderStart();
    }
    else
    {
@@ -605,6 +620,17 @@ func: _DefaultNotifyRender
 **************************************************************************************************/
 static void _DefaultNotifyRender(GwinWindow * const win)
 {
+   int       index;
+   GwinItem *item;
+   GLfloat   quad[] = {
+      -0.5f, -0.5f, 0.0f,  // bl
+       0.5f, -0.5f, 0.0f,  // br
+       0.5f,  0.5f, 0.0f,  // tr
+      -0.5f,  0.5f, 0.0f   // tl
+   };
+   GLuint    vbo;
+   GLuint    vao;
+
    genter;
 
    greturnVoidIf(
@@ -620,7 +646,36 @@ static void _DefaultNotifyRender(GwinWindow * const win)
 
    // Clearing the window to a solid light gray color.
    glClearColor(0.95f, 0.95f, 0.95f, 0.95f);
-   glClear(GL_COLOR_BUFFER_BIT);
+   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+   glEnable(GL_DEPTH_TEST);
+   glDepthFunc(GL_LESS);
+
+   // Create the vertex buffer object for the quad.
+   glGenBuffers(1, &vbo);
+   glBindBuffer(GL_ARRAY_BUFFER, vbo);
+   glBufferData(GL_ARRAY_BUFFER, sizeof(quad), quad, GL_STATIC_DRAW);
+
+   // Create the vertex attribute object for the quad.  Describing the buffer data.
+   glGenVertexArrays(1, &vao);
+   glBindVertexArray(vao);
+   glEnableVertexArrayAttrib(vao, 0);
+   glBindBuffer(GL_ARRAY_BUFFER, vbo);
+   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+
+   // Use the item shader program.
+   glUseProgram((GLuint) gwinShaderGetItemProgram());
+   glBindVertexArray(vao);
+
+   glDrawArrays(GL_LINE_STRIP, 0, 4);
+
+   // For all items in the window...
+   //forCount(index, gwinItemArrayGetCount(win->itemArray))
+   //{
+   //   item = (GwinItem *) gwinItemArrayGetAt(win->itemArray, index);
+   //
+   //   item->notifyRender(win, item);
+   //}
 
    // Swap the buffer
    SDL_GL_SwapWindow((SDL_Window *) win->windowSdl);

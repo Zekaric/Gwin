@@ -1,11 +1,11 @@
 /**************************************************************************************************
-file:       Gwin
+file:       GwinShader
 author:     Robbert de Groot
 company:    Zekaric
 copyright:  2025, Zekaric
 
 description:
-The header file for the Gwin library.
+
 **************************************************************************************************/
 
 /**************************************************************************************************
@@ -32,33 +32,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 **************************************************************************************************/
 
-#if !defined(GWIN_H)
-#define      GWIN_H
-
-// GWin is a static library normally.  Just in case someone wants it to be a dll.
-#if defined(GWIN_IS_A_DYNAMIC_LIBRARY)
-#if defined(GWIN_EXPORTS)
-#define GWIN_API __declspec(dllexport)
-#else defined(GWIN_IMPORTS)
-#define GWIN_API __declspec(dllimport)
-#endif
-#else
-#if defined(CPP)
-#define GWIN_API extern "C"
-#else
-#define GWIN_API
-#endif
-#endif
-
 /**************************************************************************************************
 include:
 **************************************************************************************************/
-#include "Gwin_Type.h"
-
-#include "GwinItem.h"
-#include "GwinMonitor.h"
-#include "GwinShader.h"
-#include "GwinWindow.h"
+#include "precompiled.h"
 
 /**************************************************************************************************
 local:
@@ -72,6 +49,31 @@ type:
 /**************************************************************************************************
 variable:
 **************************************************************************************************/
+static Gb          _isStarted = gbFALSE;
+
+static char const *_shaderItemVertProg =
+   "#version 150\n"
+   "\n"
+   "in vec3 vp;\n"
+   "\n"
+   "void main()\n"
+   "{\n"
+   "   gl_Position = vec4(vp, 1.0);\n"
+   "}\n";
+
+static char const *_shaderItemFragProg =
+   "#version 150\n"
+   "\n"
+   "out vec4 frag_color;\n"
+   "\n"
+   "void main()\n"
+   "{\n"
+   "   frag_color = vec4(0.5, 0.0, 0.5, 1.0);\n"
+   "}\n";
+
+static GLuint      _shaderItemVert  = 0,
+                   _shaderItemFrag  = 0,
+                   _shaderItemProg  = 0;
 
 /**************************************************************************************************
 prototype:
@@ -81,19 +83,63 @@ prototype:
 global:
 function:
 **************************************************************************************************/
-GWIN_API Gb           gwinAddWindow(      GwinWindow      * const win);
+/**************************************************************************************************
+func: gwinShaderGetItemProgram
+**************************************************************************************************/
+GWIN_API Gn4 gwinShaderGetItemProgram(void)
+{
+   genter;
 
-GWIN_API GwinWindow  *gwinGetWindowAt(    Gindex const index);
-GWIN_API Gcount       gwinGetWindowCount( void);
-GWIN_API GwinWindow  *gwinGetWindowParent(void);
+   greturn0If(!_isStarted);
 
-GWIN_API Gb           gwinIsStarted(      void);
+   greturn _shaderItemProg;
+}
 
-GWIN_API Gi4          gwinLoop(           void);
+/**************************************************************************************************
+func: gwinShaderStart
+**************************************************************************************************/
+GWIN_API Gb gwinShaderStart(void)
+{
+   genter;
 
-GWIN_API Gb           gwinRemoveWindowAt( Gindex const index);
+   greturnFalseIf(!gwinIsStarted());
 
-GWIN_API Gb           gwinStart(          wchar_t const * const name);
-GWIN_API void         gwinStop(           void);
+   if (!_isStarted)
+   {
+      _shaderItemVert = glCreateShader(GL_VERTEX_SHADER);
+      glShaderSource( _shaderItemVert, 1, &_shaderItemVertProg, NULL);
+      glCompileShader(_shaderItemVert);
 
-#endif
+      _shaderItemFrag = glCreateShader(GL_FRAGMENT_SHADER);
+      glShaderSource( _shaderItemFrag, 1, &_shaderItemFragProg, NULL);
+      glCompileShader(_shaderItemFrag);
+
+      _shaderItemProg = glCreateProgram();
+      glAttachShader(_shaderItemProg, _shaderItemVert);
+      glAttachShader(_shaderItemProg, _shaderItemFrag);
+      glLinkProgram( _shaderItemProg);
+   }
+
+   _isStarted = gbTRUE;
+
+   greturn gbTRUE;
+}
+
+/**************************************************************************************************
+func: gwinShaderStop
+**************************************************************************************************/
+GWIN_API void gwinShaderStop(void)
+{
+   genter;
+
+   greturnVoidIf(!gwinIsStarted());
+
+   if (_isStarted)
+   {
+      glDeleteShader( _shaderItemVert);
+      glDeleteShader( _shaderItemFrag);
+      glDeleteProgram(_shaderItemProg);
+   }
+
+   greturn;
+}

@@ -36,6 +36,9 @@
     <ClInclude Include="GwinItem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="GwinShader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Gwin.c">
@@ -51,6 +54,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GwinItem.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GwinShader.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -1,11 +1,11 @@
 /**************************************************************************************************
-file:       Precompiled
+file:       GwinShader
 author:     Robbert de Groot
 company:    Zekaric
 copyright:  2025, Zekaric
 
 description:
-Precompiled header generation.
+
 **************************************************************************************************/
 
 /**************************************************************************************************
@@ -32,21 +32,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 **************************************************************************************************/
 
-#if !defined(GWIN_PRECOMPILED_H)
-#define      GWIN_PRECOMPILED_H
+#if !defined(GWIN_SHADER_H)
+#define      GWIN_SHADER_H
 
 /**************************************************************************************************
-include:
+local:
+prototype:
 **************************************************************************************************/
-#include <GRL.h>
+GWIN_API Gn4      gwinShaderGetItemProgram(  void);
 
-#include <SDL3/SDL.h>
-
-#include <gl/glew.h>
-#include <gl/GL.h>
-#include <gl/GLU.h>
-
-#include "Gwin.h"
-#include "Gwin_Local.h"
+GWIN_API Gb       gwinShaderStart(           void);
+GWIN_API void     gwinShaderStop(            void);
 
 #endif

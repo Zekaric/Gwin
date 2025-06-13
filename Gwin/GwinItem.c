@@ -99,12 +99,13 @@ GWIN_API Gb gwinItemClocContent(GwinItem * const gwinItem, GwinWindow * const pa
 
    GTYPE_SET(gwinItem, "GwinItem");
 
-   gwinItem->parentWindow = parentWindow;
-   gwinItem->x            = x;
-   gwinItem->y            = y;
-   gwinItem->w            = w;
-   gwinItem->h            = h;
-   gwinItem->notifyRender = _DefaultNotifyRender;
+   gwinItem->parentWindow   = parentWindow;
+   gwinItem->x              = x;
+   gwinItem->y              = y;
+   gwinItem->w              = w;
+   gwinItem->h              = h;
+   gwinItem->notifyRender   = _DefaultNotifyRender;
+   gwinItem->notifyDlocItem = gwinItemDloc;
 
    gwinWindowAddItem(parentWindow, gwinItem);
 
@@ -414,11 +415,14 @@ static void _DefaultNotifyRender(GwinWindow * const win, GwinItem * const item)
 {
    genter;
 
+   item;
+
    greturnVoidIf(
       !win ||
       !win->isVisible);
 
    // Render a simple white box with black border.
+   glDrawArrays(GL_QUADS, 0, 4);
 
    greturn;
 }

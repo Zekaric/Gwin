@@ -396,17 +396,6 @@ static Gb _ClocContent(Gwin * const app, Gs const * const appName)
       }
    }
 
-   // Set preferred OpenGL requirements.
-   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION,  3);
-   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION,  3);
-   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK,   SDL_GL_CONTEXT_PROFILE_CORE);
-   SDL_GL_SetAttribute(SDL_GL_RED_SIZE,               8);
-   SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE,             8);
-   SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE,              8);
-   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER,           1);
-   SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE,             32);
-   SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE,           1);
-
    // Create the window array.
    app->windowArray = gwinWindowArrayCloc();
 
@@ -444,9 +433,12 @@ static void _DlocContent(Gwin * const app)
 {
    genter;
 
+   // Clean up the shaders.
+   gwinShaderStop();
+
    // Clean up memory.
-   gwinWindowSetIsVisible(app->windowParent, gbFALSE);
-   gwinWindowDloc(app->windowParent);
+   gwinWindowArrayForEach(app->windowArray, gwinWindowDloc);
+   gwinWindowArrayDloc(app->windowArray);
 
    gsDloc(app->name);
    gmemDloc(app->nameU1);
