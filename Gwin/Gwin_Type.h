@@ -129,7 +129,6 @@ struct GwinWindow
                             h;
    GwinWindow              *parentWindow;
    GwinItemArray           *itemArray;
-   Gv4Array                *itemHoleIndexArray;
 
    Gindex                   windowIndex;
    GwinNotifyRenderWindow   notifyRender;
@@ -183,6 +182,7 @@ struct GwinWindowArray
 #define gwinWindowArrayFind(       ARRAY, VALUE)                                                      g_ArrayFind(       (G_Array *) ARRAY, (Gp *) VALUE)
 #define gwinWindowArrayFlush(      ARRAY)                                                             g_ArrayFlush(      (G_Array *) ARRAY)
 #define gwinWindowArrayForEach(    ARRAY, FUNC)                                                       g_ArrayForEach(    (G_Array *) ARRAY, FUNC)
+#define gwinWindowArrayForEachDown(ARRAY, FUNC)                                                       g_ArrayForEachDown((G_Array *) ARRAY, FUNC)
 #define gwinWindowArrayGet(        ARRAY)                                        ((GwinWindow **)     g_ArrayGet(        (G_Array *) ARRAY))
 #define gwinWindowArrayGetAt(      ARRAY, INDEX)                                 ((GwinWindow *)      g_ArrayGetAt(      (G_Array *) ARRAY, INDEX))
 #define gwinWindowArrayGetBegin(   ARRAY)                                        ((GwinWindow *)      g_ArrayGetBegin(   (G_Array *) ARRAY))
@@ -228,6 +228,7 @@ struct GwinItemArray
 #define gwinItemArrayFind(         ARRAY, VALUE)                                                      g_ArrayFind(               (G_Array *) ARRAY, (Gp *) VALUE)
 #define gwinItemArrayFlush(        ARRAY)                                                             g_ArrayFlush(              (G_Array *) ARRAY)
 #define gwinItemArrayForEach(      ARRAY, FUNC)                                                       g_ArrayForEach(            (G_Array *) ARRAY, FUNC)
+#define gwinItemArrayForEachDown(  ARRAY, FUNC)                                                       g_ArrayForEachDown(        (G_Array *) ARRAY, FUNC)
 #define gwinItemArrayGet(          ARRAY)                                        ((GwinItem **)       g_ArrayGet(                (G_Array *) ARRAY))
 #define gwinItemArrayGetAt(        ARRAY, INDEX)                                 ((GwinItem *)        g_ArrayGetAt(              (G_Array *) ARRAY, INDEX))
 #define gwinItemArrayGetBegin(     ARRAY)                                        ((GwinItem *)        g_ArrayGetBegin(           (G_Array *) ARRAY))

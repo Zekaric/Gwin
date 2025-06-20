@@ -55,8 +55,6 @@ variable:
 /**************************************************************************************************
 prototype:
 **************************************************************************************************/
-GWIN_API Gindex       gwinWindowAddItem(        GwinWindow       * const win, GwinItem * const item);
-
 GWIN_API GwinWindow  *gwinWindowCloc(           void);
 GWIN_API Gb           gwinWindowClocContent(    GwinWindow       * const win);
 
@@ -65,8 +63,6 @@ GWIN_API void         gwinWindowDlocContent(    GwinWindow       * const win);
 
 GWIN_API Gp          *gwinWindowGetData(        GwinWindow const * const gwinWindow);
 GWIN_API Gi4          gwinWindowGetH(           GwinWindow const * const gwinWindow);
-GWIN_API GwinItem    *gwinWindowGetItemAt(      GwinWindow const * const win, Gindex const index);
-GWIN_API Gcount       gwinWindowGetItemCount(   GwinWindow const * const win);
 
 GWIN_API GwinWindow  *gwinWindowGetParentWindow(GwinWindow const * const gwinWindow);
 GWIN_API Gs          *gwinWindowGetTitle(       GwinWindow const * const gwinWindow);
@@ -81,7 +77,11 @@ GWIN_API Gb           gwinWindowIsMinimized(    GwinWindow const * const gwinWin
 GWIN_API Gb           gwinWindowIsResizable(    GwinWindow const * const gwinWindow);
 GWIN_API Gb           gwinWindowIsVisible(      GwinWindow const * const gwinWindow);
 
-GWIN_API Gb           gwinWindowRemoveItemAt(   GwinWindow       * const win, Gindex const index);
+GWIN_API Gindex       gwinWindowItemAdd(        GwinWindow       * const win, GwinItem * const item);
+GWIN_API GwinItem    *gwinWindowItemGetAt(      GwinWindow const * const win, Gindex const index);
+GWIN_API Gcount       gwinWindowItemGetCount(   GwinWindow const * const win);
+GWIN_API Gb           gwinWindowItemRemove(     GwinWindow       * const win, GwinItem * const item);
+GWIN_API Gb           gwinWindowItemRemoveAt(   GwinWindow       * const win, Gindex const index);
 
 GWIN_API Gb           gwinWindowSetCurrent(     GwinWindow       * const win);
 GWIN_API Gb           gwinWindowSetIsResizable( GwinWindow       * const win, Gb const value);

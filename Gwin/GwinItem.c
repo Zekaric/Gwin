@@ -107,7 +107,7 @@ GWIN_API Gb gwinItemClocContent(GwinItem * const gwinItem, GwinWindow * const pa
    gwinItem->notifyRender   = _DefaultNotifyRender;
    gwinItem->notifyDlocItem = gwinItemDloc;
 
-   gwinWindowAddItem(parentWindow, gwinItem);
+   greturnFalseIf(!gwinWindowItemAdd(parentWindow, gwinItem));
 
    greturn gbTRUE;
 }
@@ -141,7 +141,7 @@ GWIN_API void gwinItemDlocContent(GwinItem * const gwinItem)
       !gwinIsStarted() ||
       !gwinItem);
 
-   gwinWindowRemoveItemAt(gwinItem->parentWindow, gwinItem->itemIndex);
+   gwinWindowItemRemoveAt(gwinItem->parentWindow, gwinItem->itemIndex);
 
    gmemClearType(gwinItem, GwinItem);
 

@@ -60,42 +60,6 @@ global:
 function:
 **************************************************************************************************/
 /**************************************************************************************************
-func: gwinWindowAddItem
-**************************************************************************************************/
-GWIN_API Gi4 gwinWindowAddItem(GwinWindow * const win, GwinItem * const item)
-{
-   Gindex index;
-
-   genter;
-
-   greturnFalseIf(
-      !gwinIsStarted() ||
-      !win             ||
-      !item);
-
-   // If there are holes in the item array then reuse the hole.
-   if (gv4ArrayGetCount(win->itemHoleIndexArray))
-   {
-      // Get an index from the hole indes array.  Last one is fast.
-      index = gv4ArrayGetEnd(win->itemHoleIndexArray)->i;
-
-      // Remove the index from the hole index array.
-      gv4ArrayEraseEnd(win->itemHoleIndexArray);
-
-      gwinItemArrayUpdateAt(win->itemArray, index, item);
-
-      greturn index;
-   }
-
-   // Append to the item array.
-   gwinItemArrayAddEnd(win->itemArray, item);
-
-   index = gwinItemArrayGetCount(win->itemArray) - 1;
-
-   greturn index;
-}
-
-/**************************************************************************************************
 func: gwinWindowCloc
 **************************************************************************************************/
 GWIN_API GwinWindow *gwinWindowCloc(void)
@@ -228,46 +192,6 @@ GWIN_API Gi4 gwinWindowGetH(GwinWindow const * const gwinWindow)
       !gwinWindow);
 
    greturn gwinWindow->h;
-}
-
-/**************************************************************************************************
-func: gwinWindowGetItemAt
-
-Return value can be NULL if the item at a particular index was 'removed' with function
-gwinWindowRemoveItemAt().
-**************************************************************************************************/
-GWIN_API GwinItem *gwinWindowGetItemAt(GwinWindow const * const win, Gindex const index)
-{
-   GwinItem *item;
-
-   genter;
-
-   greturnFalseIf(
-      !gwinIsStarted() ||
-      !win             ||
-      !gindexIsGood(index, gwinItemArrayGetCount(win->itemArray)));
-
-   item = gwinItemArrayGetAt(win->itemArray, index);
-
-   greturn item;
-}
-
-/**************************************************************************************************
-func: gwinWindowGetItemCount
-**************************************************************************************************/
-GWIN_API Gcount gwinWindowGetItemCount(GwinWindow const * const win)
-{
-   Gcount count;
-
-   genter;
-
-   greturn0If(
-      !gwinIsStarted() ||
-      !win);
-
-   count = gwinItemArrayGetCount(win->itemArray);
-
-   return count;
 }
 
 /**************************************************************************************************
@@ -425,12 +349,90 @@ GWIN_API Gb gwinWindowIsVisible(GwinWindow const * const gwinWindow)
 }
 
 /**************************************************************************************************
-func: gwinWindowRemoveItemAt
+func: gwinWindowItemAdd
 **************************************************************************************************/
-GWIN_API Gb gwinWindowRemoveItemAt(GwinWindow * const win, Gindex const index)
+GWIN_API Gb gwinWindowItemAdd(GwinWindow * const win, GwinItem * const item)
 {
-   Gv4 vindex;
+   genter;
 
+   greturnFalseIf(
+      !gwinIsStarted() ||
+      !win             ||
+      !item);
+
+   // Set the index of the item.
+   item->itemIndex = gwinItemArrayGetCount(win->itemArray);
+
+   // Append to the item array.
+   gwinItemArrayAddEnd(win->itemArray, item);
+
+   greturn gbTRUE;
+}
+
+/**************************************************************************************************
+func: gwinWindowItemGetAt
+
+Return value can be NULL if the item at a particular index was 'removed' with function
+gwinWindowItemRemoveAt().
+**************************************************************************************************/
+GWIN_API GwinItem *gwinWindowItemGetAt(GwinWindow const * const win, Gindex const index)
+{
+   GwinItem *item;
+
+   genter;
+
+   greturnFalseIf(
+      !gwinIsStarted() ||
+      !win             ||
+      !gindexIsGood(index, gwinItemArrayGetCount(win->itemArray)));
+
+   item = gwinItemArrayGetAt(win->itemArray, index);
+
+   greturn item;
+}
+
+/**************************************************************************************************
+func: gwinWindowItemGetCount
+**************************************************************************************************/
+GWIN_API Gcount gwinWindowItemGetCount(GwinWindow const * const win)
+{
+   Gcount count;
+
+   genter;
+
+   greturn0If(
+      !gwinIsStarted() ||
+      !win);
+
+   count = gwinItemArrayGetCount(win->itemArray);
+
+   greturn count;
+}
+
+/**************************************************************************************************
+func: gwinWindowItemRemove
+**************************************************************************************************/
+GWIN_API Gb gwinWindowItemRemove(GwinWindow * const win, GwinItem * const item)
+{
+   genter;
+
+   greturnFalseIf(
+      !gwinIsStarted() ||
+      !win             ||
+      !item            ||
+      item->parentWindow != win);
+
+   // NULL out the item at the index.  This does not destory the item.
+   gwinItemArrayUpdateAt(win->itemArray, item->itemIndex, NULL);
+
+   greturn gbTRUE;
+}
+
+/**************************************************************************************************
+func: gwinWindowItemRemoveAt
+**************************************************************************************************/
+GWIN_API Gb gwinWindowItemRemoveAt(GwinWindow * const win, Gindex const index)
+{
    genter;
 
    greturnFalseIf(
@@ -440,10 +442,6 @@ GWIN_API Gb gwinWindowRemoveItemAt(GwinWindow * const win, Gindex const index)
 
    // NULL out the item at the index.  This does not destroy the item.
    gwinItemArrayUpdateAt(win->itemArray, index, NULL);
-
-   // Record in the hole index array that this is a hole that can be reused.
-   vindex.i = index;
-   gv4ArrayAddEnd(win->itemHoleIndexArray, &vindex);
 
    greturn gbTRUE;
 }
@@ -620,7 +618,9 @@ func: _DefaultNotifyRender
 **************************************************************************************************/
 static void _DefaultNotifyRender(GwinWindow * const win)
 {
-   int       index;
+   Gb        isCompressing;
+   Gindex    index,
+             indexCompress;
    GwinItem *item;
    GLfloat   quad[] = {
       -0.5f, -0.5f, 0.0f,  // bl
@@ -632,6 +632,8 @@ static void _DefaultNotifyRender(GwinWindow * const win)
    GLuint    vao;
 
    genter;
+
+   isCompressing = gbFALSE;
 
    greturnVoidIf(
       !win ||
@@ -670,12 +672,39 @@ static void _DefaultNotifyRender(GwinWindow * const win)
    glDrawArrays(GL_LINE_STRIP, 0, 4);
 
    // For all items in the window...
-   //forCount(index, gwinItemArrayGetCount(win->itemArray))
-   //{
-   //   item = (GwinItem *) gwinItemArrayGetAt(win->itemArray, index);
-   //
-   //   item->notifyRender(win, item);
-   //}
+   forCount(index, gwinItemArrayGetCount(win->itemArray))
+   {
+      // Get the item.
+      item = (GwinItem *) gwinItemArrayGetAt(win->itemArray, index);
+
+      // Item was removed.  We need to shift items down.
+      if (!isCompressing &&
+          !item)
+      {
+         isCompressing = gbTRUE;
+         indexCompress = index;
+      }
+      continueIf(!item);
+
+      // if compressing then first move item to new location.
+      if (isCompressing)
+      {
+         // Reset the item index.
+         item->itemIndex = indexCompress++;
+
+         // Move the item to its new location in the array.
+         gwinItemArrayUpdateAt(win->itemArray, item->itemIndex, item);
+      }
+
+      // Render the item.
+      item->notifyRender(win, item);
+   }
+
+   // If we were compressing then reset the item count.
+   if (isCompressing)
+   {
+      gwinItemArraySetCount(win->itemArray, indexCompress);
+   }
 
    // Swap the buffer
    SDL_GL_SwapWindow((SDL_Window *) win->windowSdl);
